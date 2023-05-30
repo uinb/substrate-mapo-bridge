@@ -126,7 +126,7 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn transfer_out_events)]
-    pub type TransferOutEvents<T: Config> = StorageMap<_, Blake2_256, T::BlockNumber, Vec<Vec<u8>>>;
+    pub type TransferOutEvents<T: Config> = StorageMap<_, Blake2_256, T::BlockNumber, Vec<Vec<u8>>, OptionQuery>;
 
     #[pallet::pallet]
     #[pallet::without_storage_info]
@@ -290,9 +290,11 @@ pub mod pallet {
                 amount,
                 to_chain_id,
             };
-
             let now = <frame_system::Pallet<T>>::block_number();
-
+            let v = evt.encode();
+            let mut vv = Self::transfer_out_events( now).unwrap_or_default();
+            vv.push(v);
+            TransferOutEvents::<T>::insert( &now, vv);
         }
     }
 }
