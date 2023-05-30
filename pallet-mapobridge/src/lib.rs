@@ -41,13 +41,13 @@ pub struct TransferOutEvent {
     pub token_address: EthereumCompatibleAddress,
     pub receipt: EthereumCompatibleAddress,
     pub amount: u128,
-    pub to_chain_id: u16,
+    pub to_chain_id: u32,
 }
 #[frame_support::pallet]
 pub mod pallet {
     use crate::crypto::G2;
     use crate::mapclient::MapLightClient;
-    use crate::traits::FromRlp;
+    use crate::traits::{FromRlp, TransferToMapo};
     use crate::types::common::{Address, ADDRESS_LENGTH};
     use crate::types::event::MapTransferOutEvent;
     use crate::types::header::Header;
@@ -57,6 +57,7 @@ pub mod pallet {
     use beefy_primitives::mmr::BeefyDataProvider;
     use frame_support::log::info;
     use frame_support::pallet_prelude::*;
+    use frame_support::sp_tracing::event;
     use frame_support::traits::fungibles::Mutate;
     use frame_support::transactional;
     use frame_system::pallet_prelude::*;
@@ -68,6 +69,8 @@ pub mod pallet {
     use sp_runtime::traits::{AccountIdConversion, IdentifyAccount, Verify};
     use sp_runtime::MultiSignature;
     use sp_std::vec::Vec;
+    use crate::Event::TransferOut;
+
     pub type Signature = MultiSignature;
 
     pub(crate) type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
@@ -222,28 +225,6 @@ pub mod pallet {
                 .verify_proof_data(receipt_proof)
                 .map_err(|_| Error::<T>::ProofError)?;
             Self::process_transfer_in(token_contract, amount.into(), to_address.into(), chain_id)?;
-            /*
-                   self.check_not_paused(PAUSE_TRANSFER_IN);
-            assert!(env::is_valid_account_id(event.to.as_slice()), "invalid to address: {:?}", event.to);
-            assert!(env::is_valid_account_id(event.to_chain_token.as_slice()),
-                    "invalid to chain token address: {:?}", event.to_chain_token);
-            let to_chain_token = String::from_utf8(event.to_chain_token.clone()).unwrap();
-            assert_eq!(self.near_chain_id, event.to_chain.0, "unexpected to chain: {}", event.to_chain.0);
-            assert!(self.mcs_tokens.get(&to_chain_token).is_some()
-                        || self.fungible_tokens.get(&to_chain_token).is_some() || self.is_native_token(event.to_chain_token.clone()),
-                    "to_chain_token {} is not mcs token or fungible token or native token", to_chain_token);
-            assert_eq!(false, self.is_used_event(&event.order_id), "the event with order id {} is used", hex::encode(event.order_id));
-
-            ext_map_light_client::ext(self.map_client_account.clone())
-                .with_static_gas(VERIFY_LOG_ENTRY_GAS)
-                .verify_proof_data(receipt_proof)
-                .then(
-                    Self::ext(env::current_account_id())
-                        .with_static_gas(TRANSFER_IN_SINGLE_EVENT_GAS + FINISH_TRANSFER_IN_GAS)
-                        .with_attached_deposit(env::attached_deposit())
-                        .finish_verify_proof(&event)
-                )
-                */
             Ok(().into())
         }
     }
@@ -298,6 +279,20 @@ pub mod pallet {
             let block_number = frame_system::Pallet::<T>::block_number();
             let extra: Option<Vec<Vec<u8>>> = Self::transfer_out_events(block_number);
             extra.unwrap_or_default()
+        }
+    }
+
+    impl<T: Config> TransferToMapo for Pallet<T> {
+        fn transfer_out(contract_addr: EthereumCompatibleAddress, receipt: EthereumCompatibleAddress, amount: u128, to_chain_id: u32) {
+            let evt = TransferOutEvent{
+                token_address: contract_addr,
+                receipt,
+                amount,
+                to_chain_id,
+            };
+
+            let now = <frame_system::Pallet<T>>::block_number();
+
         }
     }
 }
