@@ -156,7 +156,6 @@ mod tests {
     use super::*;
     use ethabi::Token;
     use hex;
-    use std::str::FromStr;
     use std::string::String;
 
     impl MapTransferOutEvent {

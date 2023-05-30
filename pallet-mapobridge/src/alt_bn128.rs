@@ -21,7 +21,7 @@ impl InvalidInput {
 pub(crate) fn split_elements<const ELEMENT_SIZE: usize>(
     data: &[u8],
 ) -> Result<&[[u8; ELEMENT_SIZE]], InvalidInput> {
-    crate::split::as_chunks_exact(data).map_err(|e| InvalidInput {
+    crate::split::as_chunks_exact(data).map_err(|_e| InvalidInput {
         msg: "e.to_string()".to_string(),
     })
 }

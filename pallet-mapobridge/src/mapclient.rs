@@ -92,7 +92,7 @@ impl MapLightClient {
             "the header's coinbase is not in validators".to_string()
         );
 
-        let v = signature.last().unwrap();
+        let _v = signature.last().unwrap();
         let header_hash = header
             .hash_without_seal()
             .map_err(|_| "header hash error".to_string())?;

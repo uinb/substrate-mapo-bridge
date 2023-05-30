@@ -1,5 +1,5 @@
-use fuso_support::chainbridge::EthereumCompatibleAddress;
 use crate::types::errors::Kind;
+use fuso_support::chainbridge::EthereumCompatibleAddress;
 use sp_std::marker::Sized;
 use sp_std::vec::Vec;
 
@@ -29,11 +29,12 @@ pub trait FromRlp {
         Self: Sized;
 }
 
-pub trait TransferToMapo {
-
-    fn transfer_out(contract_addr: EthereumCompatibleAddress,
-                    receipt: EthereumCompatibleAddress,
-                    amount: u128,
-                    to_chain_id: u32);
-
+pub trait TransferToMapo<T> {
+    type Balance;
+    fn transfer_out(
+        contract_addr: EthereumCompatibleAddress,
+        receipt: EthereumCompatibleAddress,
+        amount: Self::Balance,
+        to_chain_id: u32,
+    );
 }

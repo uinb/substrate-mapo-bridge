@@ -37,10 +37,10 @@ mod types;
 const MAPO_MODULE_ID: PalletId = PalletId(*b"mapo/bri");
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Eq, Encode, Decode, TypeInfo)]
-pub struct TransferOutEvent {
+pub struct TransferOutEvent<T> {
     pub token_address: EthereumCompatibleAddress,
     pub receipt: EthereumCompatibleAddress,
-    pub amount: u128,
+    pub amount: T,
     pub to_chain_id: u32,
 }
 #[frame_support::pallet]
@@ -57,7 +57,6 @@ pub mod pallet {
     use beefy_primitives::mmr::BeefyDataProvider;
     use frame_support::log::info;
     use frame_support::pallet_prelude::*;
-    use frame_support::sp_tracing::event;
     use frame_support::traits::fungibles::Mutate;
     use frame_support::transactional;
     use frame_system::pallet_prelude::*;
@@ -69,7 +68,6 @@ pub mod pallet {
     use sp_runtime::traits::{AccountIdConversion, IdentifyAccount, Verify};
     use sp_runtime::MultiSignature;
     use sp_std::vec::Vec;
-    use crate::Event::TransferOut;
 
     pub type Signature = MultiSignature;
 
@@ -102,7 +100,7 @@ pub mod pallet {
             EthereumCompatibleAddress,
             EthereumCompatibleAddress,
             BalanceOf<T>,
-            u128,
+            u32,
         ),
     }
 
@@ -126,7 +124,8 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn transfer_out_events)]
-    pub type TransferOutEvents<T: Config> = StorageMap<_, Blake2_256, T::BlockNumber, Vec<Vec<u8>>, OptionQuery>;
+    pub type TransferOutEvents<T: Config> =
+        StorageMap<_, Blake2_256, T::BlockNumber, Vec<Vec<u8>>, OptionQuery>;
 
     #[pallet::pallet]
     #[pallet::without_storage_info]
@@ -191,7 +190,7 @@ pub mod pallet {
             <T as frame_system::Config>::AccountId: From<AccountId32>,
             BalanceOf<T>: From<u128>,
         {
-            let caller = ensure_signed(origin)?;
+            let _caller = ensure_signed(origin)?;
             ensure!(
                 index < receipt_proof.receipt.logs.len() as u64,
                 Error::<T>::ProofError
@@ -246,7 +245,7 @@ pub mod pallet {
             Ok(().into())
         }
 
-        fn is_native(token_contract: &Vec<u8>) -> bool {
+        fn is_native(_token_contract: &Vec<u8>) -> bool {
             //TODO
             true
         }
@@ -282,9 +281,16 @@ pub mod pallet {
         }
     }
 
-    impl<T: Config> TransferToMapo for Pallet<T> {
-        fn transfer_out(contract_addr: EthereumCompatibleAddress, receipt: EthereumCompatibleAddress, amount: u128, to_chain_id: u32) {
-            let evt = TransferOutEvent{
+    impl<T: Config> TransferToMapo<T> for Pallet<T> {
+        type Balance = BalanceOf<T>;
+
+        fn transfer_out(
+            contract_addr: EthereumCompatibleAddress,
+            receipt: EthereumCompatibleAddress,
+            amount: Self::Balance,
+            to_chain_id: u32,
+        ) {
+            let evt: TransferOutEvent<Self::Balance> = TransferOutEvent {
                 token_address: contract_addr,
                 receipt,
                 amount,
@@ -292,9 +298,22 @@ pub mod pallet {
             };
             let now = <frame_system::Pallet<T>>::block_number();
             let v = evt.encode();
-            let mut vv = Self::transfer_out_events( now).unwrap_or_default();
+            let mut vv = Self::transfer_out_events(now).unwrap_or_default();
             vv.push(v);
-            TransferOutEvents::<T>::insert( &now, vv);
+            TransferOutEvents::<T>::insert(&now, vv);
+            Self::deposit_event(Event::<T>::TransferOut(
+                contract_addr,
+                receipt,
+                amount,
+                to_chain_id,
+            ));
         }
     }
+}
+
+#[test]
+pub fn test_pos_to_height() {
+    use ckb_merkle_mountain_range::helper::pos_height_in_tree;
+    let r = pos_height_in_tree(4194302);
+    assert_eq!(r, 21);
 }

@@ -150,7 +150,7 @@ pub fn sum_points<'a>(points: &'a Vec<G1>, bitmap: &'a Integer) -> Result<G1, Ki
 
 pub fn check_aggregated_g2_pub_key(points: &Vec<G1>, bitmap: &Integer, agg_g2_pk: &G2) -> bool {
     let g1_pk_sum = sum_points(points, bitmap);
-    if let Err(k) = g1_pk_sum {
+    if let Err(_k) = g1_pk_sum {
         return false;
     }
     let g1_pk_sum = g1_pk_sum.unwrap();

@@ -282,7 +282,6 @@ pub fn is_last_block_of_epoch(number: u64, epoch_size: u64) -> bool {
 mod tests {
     use super::*;
     use crate::types::common::{Bloom, HASH_LENGTH, NONCE_LENGTH};
-    use num_traits::Num;
 
     // tiny example to assert validity of basic data
     const ISTANBUL_EXTRA_TINY: &str = "f7ea9444add0ec310f115a0e603b2d7db9f067778eaf8a94294fc7e8f22b3bcdcf955dd7ff3ba2ed833f8212c0c00c80c3808080c3808080";
