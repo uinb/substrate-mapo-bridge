@@ -17,60 +17,9 @@ use core::fmt::Debug;
 use frame_support::dispatch::Dispatchable;
 use scale_info::TypeInfo;
 use sp_std::{prelude::*, vec::Vec};
-
-#[derive(Encode, Decode, Clone, PartialEq, Eq, Debug, TypeInfo)]
-pub enum XToken<Balance> {
-    // symbol, contract_address, total, stable, decimals
-    NEP141(Vec<u8>, Vec<u8>, Balance, bool, u8),
-    ERC20(Vec<u8>, Vec<u8>, Balance, bool, u8),
-    BEP20(Vec<u8>, Vec<u8>, Balance, bool, u8),
-    // symbol, total
-    FND10(Vec<u8>, Balance),
-    POLYGON(Vec<u8>, Vec<u8>, Balance, bool, u8),
-}
-
-impl<Balance> XToken<Balance> {
-    pub fn is_stable(&self) -> bool {
-        match self {
-            XToken::NEP141(_, _, _, stable, _)
-            | XToken::ERC20(_, _, _, stable, _)
-            | XToken::POLYGON(_, _, _, stable, _)
-            | XToken::BEP20(_, _, _, stable, _) => *stable,
-            XToken::FND10(_, _) => false,
-        }
-    }
-
-    pub fn symbol(&self) -> Vec<u8> {
-        match self {
-            XToken::NEP141(symbol, _, _, _, _)
-            | XToken::ERC20(symbol, _, _, _, _)
-            | XToken::POLYGON(symbol, _, _, _, _)
-            | XToken::BEP20(symbol, _, _, _, _)
-            | XToken::FND10(symbol, _) => symbol.clone(),
-        }
-    }
-
-    pub fn contract(&self) -> Vec<u8> {
-        match self {
-            XToken::NEP141(_, contract, _, _, _)
-            | XToken::ERC20(_, contract, _, _, _)
-            | XToken::POLYGON(_, contract, _, _, _)
-            | XToken::BEP20(_, contract, _, _, _) => contract.clone(),
-            XToken::FND10(_, _) => Vec::new(),
-        }
-    }
-}
-
 pub type ChainId = u32;
 
-pub trait ExternalSignWrapper<T: frame_system::Config> {
-    fn extend_payload<W: Dispatchable<RuntimeOrigin = T::RuntimeOrigin> + Codec>(
-        nonce: T::Index,
-        tx: Box<W>,
-    ) -> Vec<u8>;
-}
-
-pub mod chainbridge {
+pub mod mapolightclient {
     use crate::ChainId;
     use alloc::string::{String, ToString};
     use sp_std::vec::Vec;
@@ -87,5 +36,12 @@ pub mod chainbridge {
             chain_id: ChainId,
             contract_id: impl AsRef<[u8]>,
         ) -> Result<TokenId, Self::Err>;
+    }
+
+    pub struct  TokenInfo {
+        pub contract_addr: EthereumCompatibleAddress,
+        pub origin_chain_id: ChainId,
+        pub deciamls: u8,
+        pub symbol: String,
     }
 }

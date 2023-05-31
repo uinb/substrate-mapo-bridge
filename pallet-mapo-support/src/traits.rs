@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{ChainId, XToken};
+use crate::{ChainId};
 use codec::{Codec, EncodeLike, MaxEncodedLen};
 use frame_support::{traits::BalanceStatus, Parameter};
 use sp_runtime::{
     traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize, Member},
     DispatchError, DispatchResult,
 };
+use crate::mapolightclient::TokenInfo;
 
 pub trait Token<AccountId> {
     type Balance: Member
@@ -38,11 +39,13 @@ pub trait Token<AccountId> {
         + Codec
         + MaybeSerializeDeserialize;
 
-    fn create(token: XToken<Self::Balance>) -> Result<Self::TokenId, DispatchError>;
+    fn create(token: &TokenInfo) -> Result<Self::TokenId, DispatchError>;
 
     fn exists(token_id: &Self::TokenId) -> bool;
 
     fn native_token_id() -> Self::TokenId;
+
+    fn is_native(token: &Self::TokenId) -> bool;
 
     fn is_stable(token_id: &Self::TokenId) -> bool;
 

@@ -1,5 +1,5 @@
 use crate::types::errors::Kind;
-use mapo_support::chainbridge::EthereumCompatibleAddress;
+use mapo_support::mapolightclient::EthereumCompatibleAddress;
 use sp_std::marker::Sized;
 use sp_std::vec::Vec;
 

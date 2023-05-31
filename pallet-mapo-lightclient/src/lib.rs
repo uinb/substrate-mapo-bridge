@@ -19,7 +19,7 @@ extern crate core;
 
 use codec::{Decode, Encode};
 use frame_support::PalletId;
-use mapo_support::chainbridge::EthereumCompatibleAddress;
+use mapo_support::mapolightclient::EthereumCompatibleAddress;
 pub use pallet::*;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
@@ -60,7 +60,7 @@ pub mod pallet {
     use frame_support::traits::fungibles::Mutate;
     use frame_support::transactional;
     use frame_system::pallet_prelude::*;
-    use mapo_support::chainbridge::{AssetIdResourceIdProvider, EthereumCompatibleAddress};
+    use mapo_support::mapolightclient::{AssetIdResourceIdProvider, EthereumCompatibleAddress};
     use mapo_support::traits::{DecimalsTransformer, Token};
     use mapo_support::ChainId;
     use num_traits::ToPrimitive;
@@ -246,8 +246,11 @@ pub mod pallet {
         }
 
         fn is_native(_token_contract: &Vec<u8>) -> bool {
-            //TODO
-            true
+            let token_id = T::AssetIdByName::try_get_asset_id(chain_id, contract_address);
+            if token_id.is_err() {
+                return false;
+            }
+            T::Fungibles::is_native(token_id.unwrap())
         }
 
         pub(crate) fn do_unlock(
