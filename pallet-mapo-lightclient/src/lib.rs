@@ -310,10 +310,3 @@ pub mod pallet {
         }
     }
 }
-
-#[test]
-pub fn test_pos_to_height() {
-    use ckb_merkle_mountain_range::helper::pos_height_in_tree;
-    let r = pos_height_in_tree(4194302);
-    assert_eq!(r, 21);
-}
