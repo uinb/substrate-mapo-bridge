@@ -237,7 +237,7 @@ pub mod pallet {
             chain_id: u32,
         ) -> DispatchResultWithPostInfo {
             let mapo_account: T::AccountId = MAPO_MODULE_ID.try_into_account().unwrap();
-            if Self::is_native(&token_contract) {
+            if Self::is_native(chain_id,&token_contract) {
                 Self::do_unlock(mapo_account, to_address.clone(), amount)?;
             } else {
                 Self::do_mint_assets(to_address.clone(), amount, token_contract, chain_id)?;
@@ -245,12 +245,12 @@ pub mod pallet {
             Ok(().into())
         }
 
-        fn is_native(_token_contract: &Vec<u8>) -> bool {
+        pub(crate) fn is_native( chain_id: ChainId, contract_address: &Vec<u8>) -> bool {
             let token_id = T::AssetIdByName::try_get_asset_id(chain_id, contract_address);
-            if token_id.is_err() {
-                return false;
+            if let Ok(token_id) = token_id {
+                return T::Fungibles::is_native(&token_id);
             }
-            T::Fungibles::is_native(token_id.unwrap())
+            false
         }
 
         pub(crate) fn do_unlock(
