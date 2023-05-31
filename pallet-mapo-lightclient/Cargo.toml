@@ -1,5 +1,5 @@
 [package]
-name = "pallet-fuso-mapobridge"
+name = "pallet-fuso-mapo-lightclient"
 version = "4.0.2"
 authors = ["UINB Tech <dev@fusotao.org>"]
 edition = "2021"
@@ -23,7 +23,7 @@ sp-std = { default-features = false, git = "https://github.com/paritytech/substr
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30"  }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30"  }
 sp-io = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30"  }
-fuso-support = { git = "https://github.com/uinb/fusotao.git", branch="master", package="fuso-support", default-features = false }
+mapo-support = {path = "../pallet-mapo-support", default-features = false, package = "pallet-mapo-support"}
 uint = { version = "0.8.3", default-features = false }
 hex = { version = "0.4", default-features = false, features = ["alloc"]}
 rlp = { version = "0.4.6", default-features = false }

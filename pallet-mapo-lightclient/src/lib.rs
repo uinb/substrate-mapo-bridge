@@ -19,7 +19,7 @@ extern crate core;
 
 use codec::{Decode, Encode};
 use frame_support::PalletId;
-use fuso_support::chainbridge::EthereumCompatibleAddress;
+use mapo_support::chainbridge::EthereumCompatibleAddress;
 pub use pallet::*;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
@@ -60,9 +60,9 @@ pub mod pallet {
     use frame_support::traits::fungibles::Mutate;
     use frame_support::transactional;
     use frame_system::pallet_prelude::*;
-    use fuso_support::chainbridge::{AssetIdResourceIdProvider, EthereumCompatibleAddress};
-    use fuso_support::traits::{DecimalsTransformer, Token};
-    use fuso_support::ChainId;
+    use mapo_support::chainbridge::{AssetIdResourceIdProvider, EthereumCompatibleAddress};
+    use mapo_support::traits::{DecimalsTransformer, Token};
+    use mapo_support::ChainId;
     use num_traits::ToPrimitive;
     use sp_core::crypto::AccountId32;
     use sp_runtime::traits::{AccountIdConversion, IdentifyAccount, Verify};
@@ -215,8 +215,8 @@ pub mod pallet {
                 Error::<T>::TokenError
             );
 
-            ensure!(event.to_chain < 65535, Error::<T>::EventError);
-            let chain_id = event.to_chain as u16;
+            ensure!(event.to_chain < 65535*65535, Error::<T>::EventError);
+            let chain_id = event.to_chain as u32;
             let amount = event.amount;
 
             let mclient: MapLightClient = Self::map_client();
@@ -234,7 +234,7 @@ pub mod pallet {
             token_contract: Vec<u8>,
             amount: BalanceOf<T>,
             to_address: T::AccountId,
-            chain_id: u16,
+            chain_id: u32,
         ) -> DispatchResultWithPostInfo {
             let mapo_account: T::AccountId = MAPO_MODULE_ID.try_into_account().unwrap();
             if Self::is_native(&token_contract) {

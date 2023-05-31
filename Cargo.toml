@@ -3,5 +3,6 @@ panic = 'unwind'
 
 [workspace]
 members = [
-    'pallet-mapobridge'
+    'pallet-mapo-lightclient',
+    'pallet-mapo-support'
 ]
